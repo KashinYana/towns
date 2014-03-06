@@ -12,7 +12,7 @@ def search (request):
 	if request.method == 'POST':
 		townName = request.POST.getlist('prefix')
 		if len(townName) > 0:
-			townName = townName[0]
+			townName = townName[0].title()
 			townData = TownInformation.objects.filter(name = townName)
 			if len(townData) > 0:
 				return render_to_response('search.html', {'prefix':townName, 'townData': townData[0]})
@@ -22,18 +22,19 @@ def search (request):
 
 def fillTownData ():
 	fin = open('list_towns_for_database.txt', 'r')
+	TownInformation.objects.all().delete()
 	for line in fin:
 		line = line.strip()
 		if len(line) > 0:
 			townNew = TownInformation(name = line)
 			townNew.save()
 	fin.close()
-
+	
 @csrf_exempt 
 def suggest (request):
 	if request.is_ajax():
 		data = request.POST['data']
-		prefix = data				
+		prefix = data.title()				
 		choiceSet = TownInformation.objects.filter(name__startswith = prefix)[:5]
 		townNames = []
 		for town in choiceSet:
